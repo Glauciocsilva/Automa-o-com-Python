@@ -1,0 +1,58 @@
+
+import openpyxl as openpyxl
+import pandas as pd
+
+
+# Problema: Enviar email com relatório de vendas.
+
+#importar a base de dados
+tabela_vendas = pd.read_excel("Vendas.xlsx")
+
+# visualizar a base de dados
+pd.set_option('display.max_columns', None)
+#print(tabela_vendas)
+
+# Faturamento por loja
+faturamento = tabela_vendas[['ID Loja' , 'Valor Final']].groupby('ID Loja').sum()
+print("Faturamento por Loja")
+print(faturamento)
+
+print("-" * 50)
+# Quantidadde de produtos vendido por loja
+qtd_produto = tabela_vendas[['ID Loja' , 'Quantidade']].groupby('ID Loja').sum()
+print("Quantidade de produtos Vendidos")
+print(qtd_produto)
+
+print("-" * 50)
+# ticket medio por produto em cada loja
+ticket_medio = (faturamento['Valor Final'] / qtd_produto['Quantidade']).to_frame()
+print("Ticket Médio Por produto em cada loja")
+print(ticket_medio)
+
+# enviar um emial com o relatório
+import win32com.client as win32
+outlook = win32.Dispatch('outlook.application')
+mail = outlook.CreateItem(0)
+mail.To = 'glauciocsilva@gmail.com'
+mail.Subject = 'Relatorio de vendas por loja'
+mail.HTMLBody = f'''
+Prezados, 
+
+Segue o relatório de vendas por cada loja:
+
+Faturamento:
+{faturamento}
+
+Quantidade Vendidas:
+{qtd_produto}
+
+Ticket Médio
+{ticket_medio}
+
+Qualquer Duvida estou a disposição
+ATT.,
+Glaucio César
+'''
+mail.Send()
+print("Email enviado")
+
